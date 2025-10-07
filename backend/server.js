@@ -13,8 +13,20 @@ const PORT = process.env.PORT || 3000;
 
 connectDB();
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'https://answerly-five.vercel.app',
+    'http://localhost:5173', // for local development
+    'http://localhost:3000'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
