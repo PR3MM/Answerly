@@ -325,20 +325,10 @@ Answerly/
    - Check Clerk dashboard for application status
    - Clear browser cache and cookies
 
-## 📄 License
+## Images
+![Screenshot_8-10-2025_1402_answerly-five vercel app](https://github.com/user-attachments/assets/29a04507-2166-4a30-8056-ce96396b3a89)
+![Screenshot_8-10-2025_14018_answerly-five vercel app](https://github.com/user-attachments/assets/ee2bd035-e58d-4241-a62d-dc1e1971e60b)
 
-This project is licensed under the ISC License.
-
-## 👥 Contributors
-
-- **Prem Veddhote** - [@PR3MM](https://github.com/PR3MM)
-
-## 🙏 Acknowledgments
-
-- Google Gemini AI for powering quiz generation
-- Clerk for authentication services
-- MongoDB for database infrastructure
-- Vercel for hosting
 
 ---
 
