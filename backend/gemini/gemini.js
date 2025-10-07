@@ -21,7 +21,7 @@ async function main(parameters) {
   };
   const para = JSON.stringify(parameters);
   const model = 'gemini-2.0-flash-001';
-  console.log(parameters);
+//   console.log(parameters);
 
   
   const prompt =`Generate a multiple-choice quiz based on the specifications in the following JSON object:

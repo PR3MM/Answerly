@@ -200,7 +200,7 @@ export default function Dashboard({ onNavigate } = {}) {
                 try {
                     const token = await getToken().catch(() => null)
                     const userId = user?.id || null
-                    console.log("userId", userId);
+                    // console.log("userId", userId);
                     
                     if (!userId) {
                         throw new Error('User ID not available')
@@ -216,7 +216,7 @@ export default function Dashboard({ onNavigate } = {}) {
                             Authorization: token ? `Bearer ${token}` : undefined,
                         },
                     })
-                    console.log("response", res);
+                    // console.log("response", res);
                     
                     if (!res.ok) {
                         const text = await res.text().catch(() => '')
