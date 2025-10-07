@@ -2,6 +2,15 @@ import React from 'react'
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
 
 export default function LandingPage({ onNavigate } = {}) {
+  const handleGetStarted = () => {
+    onNavigate?.('dashboard')
+  }
+
+  const handleTryQuiz = () => {
+    // Navigate to a sample quiz - you can replace 'sample' with an actual quiz ID
+    onNavigate?.('/quiz/sample')
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="glass max-w-7xl mx-auto px-6 sm:px-8 py-4 flex items-center justify-between sticky top-4 mt-4 rounded-2xl z-50 fade-in">
@@ -12,7 +21,7 @@ export default function LandingPage({ onNavigate } = {}) {
 
         <nav className="flex items-center gap-3">
           <SignedOut>
-            <SignInButton>
+            <SignInButton mode="modal">
               <button className="btn">Sign in →</button>
             </SignInButton>
           </SignedOut>
@@ -44,9 +53,16 @@ export default function LandingPage({ onNavigate } = {}) {
             </p>
 
             <div className="flex flex-wrap gap-4 mb-12">
-              <SignInButton>
-                <button className="btn text-lg px-8 py-3">Get started →</button>
-              </SignInButton>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="btn text-lg px-8 py-3">Get started →</button>
+                </SignInButton>
+              </SignedOut>
+              <SignedIn>
+                <button onClick={handleGetStarted} className="btn text-lg px-8 py-3">
+                  Get started →
+                </button>
+              </SignedIn>
               <a href="#features" className="btn-ghost text-lg px-8 py-3">See features</a>
             </div>
 
@@ -120,9 +136,9 @@ export default function LandingPage({ onNavigate } = {}) {
                   Duration: 2m
                 </div>
                 <div>
-                  <SignInButton>
-                    <button className="btn">Try quiz →</button>
-                  </SignInButton>
+                  <button onClick={handleTryQuiz} className="btn">
+                    Try quiz →
+                  </button>
                 </div>
               </div>
             </div>
@@ -166,11 +182,18 @@ export default function LandingPage({ onNavigate } = {}) {
               <div className="text-primary-foreground/90 text-lg leading-relaxed">Sign up and start building tests that give instant, actionable feedback.</div>
             </div>
             <div className="flex gap-4 shrink-0 flex-wrap justify-center">
-              <SignInButton>
-                <button className="px-8 py-4 bg-background text-foreground rounded-xl font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="px-8 py-4 bg-background text-foreground rounded-xl font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                    Create quiz →
+                  </button>
+                </SignInButton>
+              </SignedOut>
+              <SignedIn>
+                <button onClick={handleGetStarted} className="px-8 py-4 bg-background text-foreground rounded-xl font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
                   Create quiz →
                 </button>
-              </SignInButton>
+              </SignedIn>
               <a href="#features" className="px-8 py-4 bg-primary-foreground/10 backdrop-blur-sm border-2 border-primary-foreground/20 text-primary-foreground font-bold rounded-xl hover:bg-primary-foreground/20 hover:scale-105 transition-all duration-300">
                 Learn more
               </a>
