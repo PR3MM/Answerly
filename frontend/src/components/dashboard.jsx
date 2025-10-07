@@ -39,16 +39,49 @@ export default function Dashboard({ onNavigate } = {}) {
     const [audience, setAudience] = useState('')
     const [creating, setCreating] = useState(false)
     const [createError, setCreateError] = useState(null)
+    const [loadingMessage, setLoadingMessage] = useState('')
+    const [loadingTip, setLoadingTip] = useState('')
+    const [loadingStep, setLoadingStep] = useState(0)
 
     // History
     const [history, setHistory] = useState(null)
     const [historyLoading, setHistoryLoading] = useState(false)
     const [historyError, setHistoryError] = useState(null)
 
+    // Dynamic loading tips
+    const loadingTips = [
+        "💡 Did you know? Regular quizzes improve long-term memory retention!",
+        "🧠 Pro tip: Review your mistakes to learn faster!",
+        "⚡ Challenge yourself with harder difficulties to boost learning!",
+        "📚 Mix different topics to enhance cognitive flexibility!",
+        "🎯 Consistent practice is the key to mastery!",
+        "✨ Every question is an opportunity to grow!",
+        "🚀 The harder the quiz, the more you learn!",
+        "🌟 Spaced repetition is proven to improve recall!",
+    ]
+
+    // Cycle through loading tips
+    useEffect(() => {
+        if (creating) {
+            const randomTip = loadingTips[Math.floor(Math.random() * loadingTips.length)]
+            setLoadingTip(randomTip)
+            
+            const tipInterval = setInterval(() => {
+                const newTip = loadingTips[Math.floor(Math.random() * loadingTips.length)]
+                setLoadingTip(newTip)
+            }, 3000) // Change tip every 3 seconds
+
+            return () => clearInterval(tipInterval)
+        }
+    }, [creating])
+
     // Generic POST to /api/quizzes - returns { quizId, questions }
     async function createQuizApi(payload) {
         setCreateError(null)
         setCreating(true)
+        setLoadingStep(0)
+        setLoadingMessage('🎯 Initializing quiz creation...')
+        
         try {
             // get Clerk token and userId
             const token = await getToken().catch(() => null)
@@ -57,6 +90,13 @@ export default function Dashboard({ onNavigate } = {}) {
             if (!userId) {
                 throw new Error('Please sign in to create a quiz')
             }
+            
+            // Simulate progressive loading
+            setTimeout(() => setLoadingMessage('🤖 Connecting to AI engine...'), 300)
+            setLoadingStep(1)
+            
+            setTimeout(() => setLoadingMessage('✨ Crafting intelligent questions...'), 800)
+            setLoadingStep(2)
             
             // Include userId in the request body
             const requestBody = { ...payload, userId }
@@ -75,13 +115,18 @@ export default function Dashboard({ onNavigate } = {}) {
                 throw new Error(body || `Failed to create quiz (${res.status})`)
             }
 
+            setLoadingMessage('🎉 Quiz ready! Preparing your experience...')
+            setLoadingStep(3)
             const data = await res.json()
             return data
         } catch (err) {
             setCreateError(err?.message || 'Unknown error')
+            setLoadingMessage('')
+            setLoadingStep(0)
             throw err
         } finally {
-            setCreating(false)
+            // Don't set creating to false here - let it show while navigating
+            // setCreating(false)
         }
     }
 
@@ -113,6 +158,7 @@ export default function Dashboard({ onNavigate } = {}) {
         } catch (err) {
             // error state already set in createQuizApi
             console.error('Create quiz failed', err)
+            setCreating(false)
         }
     }
 
@@ -135,6 +181,7 @@ export default function Dashboard({ onNavigate } = {}) {
             }
         } catch (err) {
             console.error('Start predefined failed', err)
+            setCreating(false)
         }
     }
 
@@ -207,6 +254,7 @@ export default function Dashboard({ onNavigate } = {}) {
             }
         } catch (err) {
             // handled by createQuizApi
+            setCreating(false)
         }
     }
 
@@ -264,10 +312,10 @@ export default function Dashboard({ onNavigate } = {}) {
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-50 px-4 py-2.5 rounded-full border-2 border-green-200 shadow-sm">
+                        {/* <div className="flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-50 px-4 py-2.5 rounded-full border-2 border-green-200 shadow-sm">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-sm"></span>
                             Authenticated via Clerk
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 
@@ -633,7 +681,7 @@ export default function Dashboard({ onNavigate } = {}) {
                             )}
                         </div>
 
-                        <div className="bg-foreground p-6 rounded-2xl shadow-lg text-background">
+                        {/* <div className="bg-foreground p-6 rounded-2xl shadow-lg text-background">
                             <div className="flex items-center gap-2 mb-4">
                                 <span className="text-2xl">⚡</span>
                                 <div className="font-bold text-lg">Quick Actions</div>
@@ -652,10 +700,66 @@ export default function Dashboard({ onNavigate } = {}) {
                                     Settings
                                 </button>
                             </div>
-                        </div>
+                        </div> */}
                     </aside>
                 </div>
             </div>
+
+            {/* Full-screen Loading Overlay */}
+            {creating && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-500">
+                    <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8 text-center">
+                        
+                        <div className="relative flex flex-col items-center">
+                            {/* Simplified Animated spinner */}
+                            <div className="relative w-24 h-24 mb-6">
+                                {/* Outer rotating ring */}
+                                <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                                <div className="absolute inset-0 border-4 border-t-primary border-r-primary/80 border-b-transparent border-l-transparent rounded-full animate-spin" style={{ animationDuration: '1s' }}></div>
+                                
+                                {/* Center emoji with scale animation */}
+                                <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse">
+                                    ✨
+                                </div>
+                            </div>
+                            
+                            {/* Loading message */}
+                            <div className="min-h-[80px] flex flex-col items-center justify-center">
+                                <h3 className="text-2xl font-bold text-foreground mb-2">
+                                    {loadingMessage || 'Crafting Your Quiz...'}
+                                </h3>
+                                <p className="text-sm text-muted-foreground h-5">
+                                    {loadingStep < 2 ? "Designing questions just for you" : "Finalizing your quiz"}
+                                </p>
+                            </div>
+                            
+                            {/* Progress bar with steps */}
+                            <div className="w-full my-6">
+                                <div className="flex justify-between mb-2 text-xs font-semibold text-muted-foreground">
+                                    <span className={loadingStep >= 0 ? "text-primary" : ""}>Initialize</span>
+                                    <span className={loadingStep >= 1 ? "text-primary" : ""}>Connect</span>
+                                    <span className={loadingStep >= 2 ? "text-primary" : ""}>Generate</span>
+                                    <span className={loadingStep >= 3 ? "text-primary" : ""}>Finalize</span>
+                                </div>
+                                <div className="w-full bg-muted rounded-full h-2 overflow-hidden shadow-inner">
+                                    <div 
+                                        className="h-full bg-primary rounded-full transition-all duration-500 ease-out" 
+                                        style={{ width: `${(loadingStep / 3) * 100}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                            
+                            {/* Pro tip */}
+                            <div className="min-h-[40px] flex items-center justify-center px-4 mt-2">
+                                <p className="text-sm text-muted-foreground italic">
+                                    <strong>Pro tip:</strong> Review your mistakes to learn faster!
+                                </p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
