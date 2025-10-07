@@ -24,6 +24,8 @@ export default function Quiz({ quizId, questions: initialQuestions, onNavigate }
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState(null)
   const [timeLeft, setTimeLeft] = useState(null)
+  const [isSampleQuiz, setIsSampleQuiz] = useState(false)
+  const [actualQuizId, setActualQuizId] = useState(quizId)
 
   // Fetch quiz data if not provided
   useEffect(() => {
@@ -36,6 +38,11 @@ export default function Quiz({ quizId, questions: initialQuestions, onNavigate }
         })
         .then((data) => {
           setQuestions(data.questions || [])
+          setIsSampleQuiz(data.isSample || false)
+          // If it's a sample quiz, store the actual quiz ID returned from backend
+          if (data.quizId) {
+            setActualQuizId(data.quizId)
+          }
           setLoading(false)
         })
         .catch((err) => {
@@ -86,7 +93,7 @@ export default function Quiz({ quizId, questions: initialQuestions, onNavigate }
     setSubmitting(true)
     try {
       const token = await getToken().catch(() => null)
-      const userId = user?.id || null
+      const userId = user?.id || 'guest'
 
       // Build submission payload - backend expects { [questionId]: selectedOptionId }
       const answersPayload = {}
@@ -96,11 +103,11 @@ export default function Quiz({ quizId, questions: initialQuestions, onNavigate }
         }
       })
 
-      const res = await fetch(apiUrl(`/api/quizzes/${quizId}/submit`), {
+      const res = await fetch(apiUrl(`/api/quizzes/${actualQuizId}/submit`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : undefined,
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({ userId, answers: answersPayload }),
       })
@@ -180,8 +187,8 @@ export default function Quiz({ quizId, questions: initialQuestions, onNavigate }
             </div>
 
             <div className="flex gap-4 justify-center flex-wrap">
-              <button onClick={() => onNavigate?.('dashboard')} className="btn-ghost text-lg px-8 py-3">
-                ← Dashboard
+              <button onClick={() => onNavigate?.(isSampleQuiz ? 'home' : 'dashboard')} className="btn-ghost text-lg px-8 py-3">
+                ← {isSampleQuiz ? 'Home' : 'Dashboard'}
               </button>
               <button onClick={() => window.location.reload()} className="btn text-lg px-8 py-3">
                 🔄 Retake Quiz
@@ -198,8 +205,8 @@ export default function Quiz({ quizId, questions: initialQuestions, onNavigate }
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="glass p-5 rounded-2xl mb-6 flex items-center justify-between sticky top-4 z-10">
-          <button onClick={() => onNavigate?.('dashboard')} className="text-sm font-semibold text-primary hover:underline flex items-center gap-2">
-            <span>←</span> Dashboard
+          <button onClick={() => onNavigate?.(isSampleQuiz ? 'home' : 'dashboard')} className="text-sm font-semibold text-primary hover:underline flex items-center gap-2">
+            <span>←</span> {isSampleQuiz ? 'Home' : 'Dashboard'}
           </button>
           <div className="text-sm font-semibold text-foreground bg-accent px-4 py-2 rounded-full">
             Question {currentIndex + 1} of {totalQuestions}
@@ -226,20 +233,27 @@ export default function Quiz({ quizId, questions: initialQuestions, onNavigate }
         </div>
 
         <SignedOut>
-          <div className="card text-center p-12 border-2 shadow-lg scale-in">
-            <span className="text-6xl mb-6 block">🔒</span>
-            <h3 className="text-2xl font-bold mb-3 text-foreground">Please sign in to take this quiz</h3>
-            <p className="text-muted-foreground mb-6">Create an account to access quizzes and track your progress</p>
-            <SignInButton>
-              <button className="btn text-lg px-8 py-3">Sign in →</button>
-            </SignInButton>
-          </div>
+          {!isSampleQuiz && (
+            <div className="card text-center p-12 border-2 shadow-lg scale-in">
+              <span className="text-6xl mb-6 block">🔒</span>
+              <h3 className="text-2xl font-bold mb-3 text-foreground">Please sign in to take this quiz</h3>
+              <p className="text-muted-foreground mb-6">Create an account to access quizzes and track your progress</p>
+              <SignInButton>
+                <button className="btn text-lg px-8 py-3">Sign in →</button>
+              </SignInButton>
+            </div>
+          )}
         </SignedOut>
 
-        <SignedIn>
-          {/* Question card */}
-          <div className="card p-10 border-2 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-            <h3 className="text-3xl font-bold mb-8 text-foreground leading-tight">{currentQuestion?.text}</h3>
+        {(isSampleQuiz || user) && (
+          <>
+            {/* Question card */}
+            <div className="card p-10 border-2 shadow-xl hover:shadow-2xl transition-shadow duration-300">{isSampleQuiz && (
+                <div className="mb-6 inline-block px-4 py-2 bg-gradient-to-br from-primary/10 to-accent rounded-full text-sm font-bold text-foreground border border-border">
+                  ✨ Sample Quiz - No login required
+                </div>
+              )}
+              <h3 className="text-3xl font-bold mb-8 text-foreground leading-tight">{currentQuestion?.text}</h3>
 
             <div className="space-y-4">
               {currentQuestion?.options?.map((option, idx) => (
@@ -322,7 +336,8 @@ export default function Quiz({ quizId, questions: initialQuestions, onNavigate }
               )}
             </div>
           </div>
-        </SignedIn>
+          </>
+        )}
       </div>
     </div>
   )
