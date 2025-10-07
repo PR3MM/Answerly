@@ -7,18 +7,22 @@ const submit = async (req, res) => {
     const { answers } = req.body;
     const userId = (req.auth && req.auth.userId) || req.body?.userId || null;
     
-    if (!userId) {
+    // Check if the quiz exists and if it's a sample quiz
+    const correctQuiz = await Quiz.findById(quizId);
+    if (!correctQuiz) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    const isSampleQuiz = correctQuiz.userId === 'system';
+    
+    // Allow guest submissions only for sample quizzes
+    if (!userId && !isSampleQuiz) {
       console.warn('Unauthenticated request to submit quiz: no userId available on req.auth or req.body')
       return res.status(401).json({ error: 'Authentication required to submit quiz' })
     }
 
     if (!answers || Object.keys(answers).length === 0) {
       return res.status(400).json({ error: 'Answers are required.' });
-    }
-
-    const correctQuiz = await Quiz.findById(quizId);
-    if (!correctQuiz) {
-      return res.status(404).json({ error: 'Quiz not found' });
     }
 
     let score = 0;
@@ -47,15 +51,17 @@ const submit = async (req, res) => {
       });
     });
 
-    // Create and save the submission record
-    const newSubmission = new Submission({
-      quizId,
-      userId,
-      score,
-      total: correctQuiz.questions.length,
-      results,
-    });
-    await newSubmission.save();
+    // Create and save the submission record only for authenticated users
+    if (userId && userId !== 'guest') {
+      const newSubmission = new Submission({
+        quizId,
+        userId,
+        score,
+        total: correctQuiz.questions.length,
+        results,
+      });
+      await newSubmission.save();
+    }
 
     return res.status(200).json({
       message: 'Quiz submitted successfully!',

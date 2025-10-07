@@ -3,6 +3,7 @@ import quizzes from "../controllers/quizzes.js";
 import submit from "../controllers/submitquiz.js"
 import getQuiz from "../controllers/getQuiz.js"
 import { getQuizHistory } from "../controllers/dashboard.js"
+import getSampleQuiz from "../controllers/sampleQuiz.js"
 
 const router = Router();
 
@@ -13,6 +14,11 @@ router.get("/", (req, res) => {
 
 router.get('/dashboard/history', (req, res) => {
     getQuizHistory(req, res);
+})
+
+// Sample quiz route (must come before the dynamic :quizId route)
+router.get("/quizzes/sample", (req, res) => {
+    getSampleQuiz(req, res);
 })
 
 router.post("/quizzes", (req, res) => {
