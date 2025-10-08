@@ -41,7 +41,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
+// Use '/*' instead of '*' because path-to-regexp rejects bare '*'
+app.options('/*', cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
