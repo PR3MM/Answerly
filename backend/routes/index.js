@@ -11,6 +11,11 @@ router.get("/", (req, res) => {
     res.send("Hello from the API!");
 });
 
+// Health check endpoint for Render self-ping and monitoring
+router.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 
 router.get('/dashboard/history', (req, res) => {
     getQuizHistory(req, res);

@@ -40,9 +40,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly
-// Use '/*' instead of '*' because path-to-regexp rejects bare '*'
-app.options('/*', cors(corsOptions));
+// Note: app.use(cors()) already handles all OPTIONS preflight requests
+// No need for explicit app.options() route with Express 5+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -60,7 +59,7 @@ function initializeSelfPing() {
   const SERVICE_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
   
   function selfPing() {
-    fetch(`${SERVICE_URL}/health`)
+    fetch(`${SERVICE_URL}/api/health`)
       .then(response => {
         if (response.ok) {
           console.log(`✅ Self-ping successful at ${new Date().toISOString()}`);
@@ -76,7 +75,7 @@ function initializeSelfPing() {
   // Start self-pinging after app is fully ready
   setTimeout(() => {
     console.log('🚀 Starting self-ping mechanism...');
-    console.log(`📍 Pinging: ${SERVICE_URL}/health every 13 minutes`);
+    console.log(`📍 Pinging: ${SERVICE_URL}/api/health every 13 minutes`);
     
     selfPing(); // Initial ping
     setInterval(selfPing, PING_INTERVAL); // Recurring pings
