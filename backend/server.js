@@ -19,7 +19,8 @@ const corsOptions = {
     const allowedOrigins = [
       'https://answerly-five.vercel.app',
       'http://localhost:5173',
-      'http://localhost:3000'
+      'http://localhost:3000',
+      "https://eco-aware-nine.vercel.app"
     ];
     
     // Allow requests with no origin (like mobile apps or curl requests)
